@@ -8,21 +8,20 @@
 <div class="container">
 <nav>
 
-<a class="button button-clear" href="/">About</a>
 
-<a class="button button-clear" href="/projects">Projects</a>
+<a class="button" href="/">About</a>
 
-<a class="button button-clear" href="/things">Things</a>
+<a class="button" href="/projects">Projects</a>
 
-<a class="button button-clear" href="/resume">Resume</a>
+<a class="button" href="/things">Things</a>
+
+<a class="button" href="/resume">Resume</a>
 
 </nav>
 
 <h1 id="projects">Projects</h1>
 
 <h2 id="seqstk">SeqStk</h2>
-
-<p><a href="https://github.com/mikemehl/SeqStack">Source</a>.</p>
 
 <p>A virtual stack machine whose input and output is through…more stacks! Trying to keep this one minimal and flexible, so writing in Rust and avoiding any external dependencies.</p>
 
@@ -49,10 +48,6 @@
 
 <h3 id="isa">ISA</h3>
 
-<h4 id="instruction-format">Instruction Format</h4>
-
-<p>Instructions are a byte each. The 3 most significant bits determine the instruction type, and how to interpret the rest of the instruction. Generally, the next n bits determine the specific instruction, with the remaining bits determining the adressing mode or other parameters. Operations do not generally support all adressing modes. See the list of all operations below.</p>
-
 <h4 id="adressing-modes">Adressing Modes</h4>
 
 <p>Where supported, addressing modes are represented by two bits in the instruction byte.</p>
@@ -78,10 +73,11 @@
       <li>Adressing Modes: Stack.
         <ul>
           <li>110 - Pop</li>
-          <li>101 - Dup</li>
-          <li>100 - Rot</li>
-          <li>011 - MovToRts</li>
-          <li>010 - MovFromRts</li>
+          <li>101 - Drop</li>
+          <li>100 - Dup</li>
+          <li>011 - Rot</li>
+          <li>010 - MovToRts</li>
+          <li>001 - MovFromRts</li>
         </ul>
       </li>
     </ul>
