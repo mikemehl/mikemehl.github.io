@@ -1,0 +1,161 @@
+<!doctype html>
+<html>
+<head>
+<!-- Google Fonts --> <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">  <!-- CSS Reset --> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.css">  <!-- Milligram CSS --> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.css">  <!-- You should properly set the path from the main file. -->
+<title>Mickle Meal | Projects</title>
+</head>
+<body>
+<div class="container">
+<nav>
+
+<a class="button button-clear" href="/">About</a>
+
+<a class="button button-clear" href="/projects">Projects</a>
+
+<a class="button button-clear" href="/things">Things</a>
+
+<a class="button button-clear" href="/resume">Resume</a>
+
+</nav>
+<h1 id="projects">Projects</h1>
+
+<h2 id="seqstk">SeqStk</h2>
+
+<p>A virtual stack machine whose input and output is through…more stacks! Trying to keep this one minimal and flexible, so writing in Rust and avoiding any external dependencies.</p>
+
+<h3 id="some-quirks">Some quirks:</h3>
+
+<ul>
+  <li>All data is 16.16 bit fixed point two’s complement. If used as an address, the bottom 16 bits are ignored.</li>
+  <li>Memory is 2^15 bytes, byte addressible. Why 2^15 and not 2^16? To enable negative offsets in particular addressing modes (we’ll see if this is a good idea).</li>
+  <li>All input/output will be triggered through eight “ports.”
+    <ul>
+      <li>Each port is…a stack!</li>
+      <li>Entities external to the VM may only push/pop with a particular port.</li>
+    </ul>
+  </li>
+  <li>Interrupts allow code to be executed at a particular time. Speaking of time….</li>
+  <li>No internal timing.
+    <ul>
+      <li>You <code class="highlighter-rouge">load()</code> your binary code, and either <code class="highlighter-rouge">cycle_all()</code>, <code class="highlighter-rouge">cycle()</code> once, or <code class="highlighter-rouge">trigger_interrupt()</code>s at your pleasure.</li>
+      <li>Hoping this keeps scope manageable, and the VM useable in many different contexts.</li>
+      <li>Plus, who doesn’t want to have control over their timing????</li>
+    </ul>
+  </li>
+</ul>
+
+<h3 id="isa">ISA</h3>
+
+<h4 id="adressing-modes">Adressing Modes</h4>
+
+<p>Where supported, addressing modes are represented by two bits in the instruction byte.</p>
+
+<ul>
+  <li>11 - Immediate (Read value from next 2-4 bytes in memory)</li>
+  <li>10 - Index Stack (Read value from next 2 bytes in memory, treat as memory address, use stack top as offset from that address)</li>
+  <li>01 - Index Immediate (Read offset from next 2 bytes in memory, address from top of stack, fractional portion ignored)</li>
+  <li>00 - Stack (Read value from top of stack)</li>
+</ul>
+
+<h4 id="instruction-list-and-format">Instruction List and Format</h4>
+
+<ul>
+  <li>111 - Stack Manipulation
+    <ul>
+      <li>Adressing Modes: Immediate, Index Stack, Index Immediate, Stack. Stack treats the top of the stack as a memory address (ignores fractional portion).
+        <ul>
+          <li>111 - Push</li>
+          <li>000 - Store</li>
+        </ul>
+      </li>
+      <li>Adressing Modes: Stack.
+        <ul>
+          <li>110 - Pop</li>
+          <li>101 - Drop</li>
+          <li>100 - Dup</li>
+          <li>011 - Rot</li>
+          <li>010 - MovToRts</li>
+          <li>001 - MovFromRts</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>110 - Arithmetic
+    <ul>
+      <li>Adressing Modes: Stack only.
+        <ul>
+          <li>11 - Add</li>
+          <li>10 - Sub</li>
+          <li>01 - Mul</li>
+          <li>00 - Div</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>101 - Bit Manipulation
+    <ul>
+      <li>Adressing Modes: Stack only.
+        <ul>
+          <li>111 - Shl</li>
+          <li>110 - Shr</li>
+          <li>101 - Rol</li>
+          <li>100 - Ror</li>
+          <li>011 - And</li>
+          <li>010 - Or</li>
+          <li>001 - Xor</li>
+          <li>000 - Not</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>100 - Port Ops
+    <ul>
+      <li>Adressing Modes: Stack only. The remaining three bits determine which port the operation corresponds to.
+        <ul>
+          <li>11 - PortPush</li>
+          <li>10 - PortPop</li>
+          <li>01 - PortGet</li>
+          <li>00 - PortClear</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>011 - Control Flow
+    <ul>
+      <li>Adressing Modes: Immediate, Index Stack, Index Immediate, Stack. For comparison instructions, the top two values on the stack are compared. If the instruction jumps, the third value on the stack is used (if that adressing mode uses the stack).
+        <ul>
+          <li>111 - JMP</li>
+          <li>110 - CALL</li>
+          <li>101 - RET</li>
+          <li>100 - BEQ</li>
+          <li>011 - BNEQ</li>
+          <li>010 - BGT</li>
+          <li>001 - BLT</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>010 - Interrupt
+    <ul>
+      <li>SETI - set interrupt (one for each port??)</li>
+    </ul>
+  </li>
+  <li>001 - Misc.
+    <ul>
+      <li>1 - BRK
+        <ul>
+          <li>Stop execution.</li>
+        </ul>
+      </li>
+      <li>0 - NOP
+        <ul>
+          <li>Do nothing.</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+</div>
+</body>
+</html>
