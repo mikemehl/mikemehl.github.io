@@ -1,0 +1,5 @@
+collections_dir: _collections
+collections:
+  programming:
+    output: true
+    permalink: /programming/:path/
